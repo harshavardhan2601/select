@@ -1,0 +1,308 @@
+html
+    include header.pug 
+    include navbar.pug
+    //- script(src='https://ajax.googleapis.com/ajax/libs/jquery/3.4.0/jquery.min.js') 
+    style.
+        #blackscreen {
+        position: fixed;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        opacity: .5;
+        background: #000;
+        z-index: 9998;
+        display: none
+        }
+        #blackmessage {
+        position: fixed;
+        left: 45%;
+        top: 48%;
+        background: #FFF;
+        z-index: 9999;
+        padding: 40px;
+        display: none
+        }
+        #canvasDiv {
+        display: none;
+        text-align: center
+        }
+    body
+        .container-fluid
+            #blackscreen
+            #blackmessage
+            form(method='POST', action='/savedata',autocomplete="off")    
+                .card.mt-3
+                    .card-header
+                            h5.text-center Add 
+                    .card-body
+                        .row#canvasDiv
+                            canvas#canvasSignature(width='380px', height='400px', style='border:2px solid #000000;')
+                            br
+                            br
+                            input(type='button', onclick='CloseCanvas()', value='Close' style='margin-right:77px')
+                            input(type='button', onclick='clearSignature()', value='Clear' style='margin-right:77px')
+                            input(type='button', onclick='saveSignature()', value='Save' style='margin-right:7px')
+                        #formDiv
+                            .row.mt-3
+                                .col-md-4.col-sm-12
+                                    .input-group.input-group-sm.mb-3
+                                        .input-group-append
+                                            .input-group-text Country Name 
+                                        input.form-control.form-control-sm(type='text', name='country_name')
+                                .col-md-4.col-sm-12
+                                    .input-group.input-group-sm.mb-3
+                                        .input-group-append
+                                            .input-group-text State Name 
+                                        input.form-control.form-control-sm(type='text', name='state_name')
+                                .col-md-4.col-sm-12
+                                    .input-group.input-group-sm.mb-3
+                                        .input-group-append
+                                            .input-group-text District Name 
+                                        input.form-control.form-control-sm(type='text', name='district_name')
+                            .row
+                                input(type='hidden', id='hiSign' name='user_signature')
+                                .col-md-6.col-sm-6.col-12
+                                    p
+                                        | Student Signature
+                                    .p4(onclick="getpusersign('instructor',this)", style='width:100px;height:100px;border:solid 1px #ccc;background-color:white;' id="pId")
+                                    span.instructor_sign
+                                .col-md-6.col-sm-6
+                                    //-#blackscreen
+                                    //-#blackmessage
+                                    .jscriptforms(style='display:none;')
+                                    #canvasDiv(style='display:none;')
+                                        canvas#canvasSignature(width='400px', height='300px', style='border:2px solid #000000;')
+                                        br
+                                        input(type='button', onclick='CloseCanvas()', value='Close',style='margin:7px')
+                                        input(type='button', onclick='clearSignature()', value='Clear',style='margin:7px')
+                                        input(type='button', onclick='saveSignature()', value='Save',style='margin:7px')
+                            .row
+                                .col-md-12.text-center
+                                    button.btn.btn-success(type='submit') Save
+        script.
+            $(document).ready(function(){
+                initialize();
+            })
+            let initialize = () => {
+                console.log('sigcanvas1');
+                var sigCanvas = document.getElementById("canvasSignature");
+                var context = sigCanvas.getContext("2d");
+                context.strokeStyle = '#000';
+                context.lineJoin = 'round';
+                context.lineWidth = 5;
+                var is_touch_device = 'ontouchstart' in document.documentElement;
+                if (is_touch_device) {
+                    var drawer = {
+                        isDrawing: false,
+                        touchstart: function(coors) {
+                            context.beginPath();
+                            context.moveTo(coors.x, coors.y);
+                            this.isDrawing = true;
+                        },
+                        touchmove: function(coors) {
+                            if (this.isDrawing) {
+                                context.lineTo(coors.x, coors.y);
+                                context.stroke();
+                            }
+                        },
+                        touchend: function(coors) {
+                            if (this.isDrawing) {
+                                this.touchmove(coors);
+                                this.isDrawing = false;
+                            }
+                        }
+                    };
+                    function draw(event) {
+                        console.log('draw');
+                        var coors = {
+                            x: event.targetTouches[0].pageX,
+                            y: event.targetTouches[0].pageY
+                        };
+                        var obj = sigCanvas;
+                        if (obj.offsetParent) {
+                            do {
+                                coors.x -= obj.offsetLeft;
+                                coors.y -= obj.offsetTop;
+                            }
+                            while ((obj = obj.offsetParent) != null);
+                        }
+                        drawer[event.type](coors);
+                    }
+                    sigCanvas.addEventListener('touchstart', draw, false);
+                    sigCanvas.addEventListener('touchmove', draw, false);
+                    sigCanvas.addEventListener('touchend', draw, false);
+                    sigCanvas.addEventListener('touchmove', function(event) {
+                        event.preventDefault();
+                    }, false);
+                } else {
+                $("#canvasSignature").mousedown(function(mouseEvent) {
+                    var position = getPosition(mouseEvent, sigCanvas);
+                    context.moveTo(position.X, position.Y);
+                    context.beginPath();
+                    $(this).mousemove(function(mouseEvent) {
+                        drawLine(mouseEvent, sigCanvas, context);
+                    }).mouseup(function(mouseEvent) {
+                        finishDrawing(mouseEvent, sigCanvas, context);
+                    }).mouseout(function(mouseEvent) {
+                        finishDrawing(mouseEvent, sigCanvas, context);
+                    });
+                });
+                }
+            }
+
+            let drawLine = (mouseEvent, sigCanvas, context) => {
+                console.log('position');
+                var position = getPosition(mouseEvent, sigCanvas);
+                context.lineTo(position.X, position.Y);
+                context.stroke();
+            }
+            function appendbodytagtohtml() {
+                //-return '<div id="finaltext">' + document.getElementById("finaltext").innerHTML + '</div>';
+            }
+            function finishDrawing(mouseEvent, sigCanvas, context) {
+                console.log('finish');
+                drawLine(mouseEvent, sigCanvas, context);
+                context.closePath();
+                $(sigCanvas).unbind("mousemove")
+                .unbind("mouseup")
+                .unbind("mouseout");
+            }
+            function printhtml() {
+                console.log('print');
+                var data = appendbodytagtohtml();
+                data = "<div style='font-size:14px;'>" + data + "</div>";
+                window.print(data);
+            }
+            function isCanvasBlank(canvas) {
+                console.log('canvas');
+                var blank = document.createElement('canvas');
+                blank.width = canvas.width;
+                blank.height = canvas.height;
+                return canvas.toDataURL() == blank.toDataURL();
+            }
+            function CloseCanvas() {
+                console.log('close');
+                $('#canvasDiv').hide();
+                $('#formDiv').show();
+                window.scrollTo(0, document.body.scrollHeight);
+            }
+            let saveSignature = () => {
+                console.log('save1');
+                var src = document.getElementById('canvasSignature').toDataURL();
+                var blank = isCanvasBlank(document.getElementById('canvasSignature'));
+                if (blank) {
+                    dialog('Please Sign', 1);
+                    $('#canvasDiv').hide();
+                    $('#formDiv').show();
+                    window.scrollTo(0, document.body.scrollHeight);
+                } else {
+                    var cla_arr = document.getElementsByClassName(current_sign + '_sign');
+                    $('#hiSign').val(src);
+                    cla_arr[0].innerHTML = '<img src="' + src + '" style="width:100px;height:100px;border:1px solid #000" />';
+                    $('#canvasDiv').hide();
+                    $('#pId').hide();
+                    $('#formDiv').show();
+                    window.scrollTo(0, document.body.scrollHeight);
+                    savesignform();
+                }
+            }
+            function getPosition(mouseEvent, sigCanvas) {
+                console.log('sigcanvas');
+                var x, y;
+                if (mouseEvent.pageX != undefined && mouseEvent.pageY != undefined) {
+                    x = mouseEvent.pageX;
+                    y = mouseEvent.pageY;
+                } else {
+                    x = mouseEvent.clientX + document.body.scrollLeft + document.documentElement.scrollLeft;
+                    y = mouseEvent.clientY + document.body.scrollTop + document.documentElement.scrollTop;
+                }
+                return {
+                    X: x - sigCanvas.offsetLeft,
+                    Y: y - sigCanvas.offsetTop
+                };
+            }
+            
+            function o(id) {
+                return document.getElementById(id)
+            }
+            var current_sign = '';
+            function getpusersign(param, ele) {
+                try {
+                    var myimg = ele.getElementsByTagName('img')[0];
+                    console.log(myimg);
+                    current_sign = param;
+                    if (myimg == undefined) {
+                        clearSignature();
+                        $('#canvasDiv').show();
+                        $('#formDiv').hide();
+                        var data = appendbodytagtohtml();
+                        var obj = {
+                            param: param
+                        };
+                    } else {
+                        var mysign = myimg.src;
+                        var mysign_arr = mysign.split(':');
+                        if (mysign_arr[0] == 'data') {
+                            dialog('Already Signed', 1);
+                        } else {
+                            dialog('Signature Pending', 1);
+                        }
+                    }
+                } catch (e) {
+                    dialog(e, 1);
+                }
+            }
+            function savesignform() {
+                $.post("#BASE_URL#api/save_forms", {
+                data: appendbodytagtohtml(),
+                dps_id: '#DPS_ID2#',
+                form_id: '#FORM_ID2#',
+                all_signed: 0
+                }, function(data) {});
+            }
+            let clearSignature=()=> {
+                console.log('clear');
+                var sigCanvas = document.getElementById("canvasSignature");
+                var context = sigCanvas.getContext("2d");
+                context.clearRect(0, 0, sigCanvas.width, sigCanvas.height);
+            }
+            let saveForm = () => {
+                console.log('save');
+                var signcount = 0;
+                var checkedvalues = 0;
+                var html = appendbodytagtohtml();
+                if (html.indexOf('instructor_sign') != -1) {
+                    var h1 = html.split('instructor_sign');
+                    var h2 = h1[1].split('</span>');
+                    if (h2[0].indexOf('<img') != -1) {
+                        signcount++;
+                    } else {
+                        dialog('Please provide instructor Signature', 1);
+                    }
+                }
+                if (signcount == 0) {
+                    document.getElementById("savebtn").style.display = "block";
+                }
+                if (signcount == 1) {
+                    document.getElementById("savebtn").style.display = "none";
+                    $.post("#BASE_URL#api/save_forms", {
+                        data: appendbodytagtohtml(),
+                        dps_id: '#DPS_ID#',
+                        form_id: '#FORM_ID#',
+                        all_signed: 1
+                    }, function(data) {});
+                    dialog('Saved Successfully !', 1);
+                }
+            }
+            let dialog = (msg, ch) => {
+                console.log('dialog');
+                o('blackmessage').innerHTML = msg + '<br /><input type="button" value="Ok" onclick="dialog(\'\', 2)" style="margin:20px 0 0 90px;background:#85c1e9;padding: 5px 20px;" />';
+                if (ch == 1) {
+                    o('blackscreen').style.display = 'block';
+                    o('blackmessage').style.display = 'block';
+                } else {
+                    o('blackscreen').style.display = 'none';
+                    o('blackmessage').style.display = 'none';
+                }
+            }

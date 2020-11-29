@@ -1,0 +1,42 @@
+html
+    head
+        link(rel='stylesheet', href='https://maxcdn.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css')
+        script(src='https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js')
+        script(src='https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js')
+        script(src='https://maxcdn.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js')
+        link(href='https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css', rel='stylesheet')
+        script.
+            var countryStateInfo = {
+            //- Mobile: {"Nokia":{}, "Redmi":{}, "Samsung":{}},
+            //- Clothes: {"Shirt":{}, "Pant":{}, "T-shirt":{}}
+            "USA": {"California": {},"Texas": {}},
+            "India": {"Assam":{},"Gujarat":{}}
+            }
+            window.onload = function () {
+            //Get html elements
+            var countySel = document.getElementById("countySel");
+            var stateSel = document.getElementById("stateSel");
+            //Load countries
+            for (var country in countryStateInfo) {
+            console.log(country);
+            countySel.options[countySel.options.length] = new Option(country, country);
+            }
+            //County Changed
+            countySel.onchange = function () {
+            if (this.selectedIndex < 1)
+            return; // done
+            for (var state in countryStateInfo[this.value]) {
+            console.log(state);
+            stateSel.options[stateSel.options.length] = new Option(state, state);
+            }
+            }
+            }
+    body
+        .container.mt-5
+            form#myForm(name='myform')
+                .form-group
+                    select#countySel.form-control(size='1')
+                        option(value='', selected='selected') -- Select Country --
+                .form-group
+                    select#stateSel.form-control(size='1')
+                        option(value='', selected='selected') -- Select State--

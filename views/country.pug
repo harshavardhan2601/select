@@ -1,0 +1,104 @@
+html
+    include header.pug 
+    include navbar.pug
+    body
+        .container-fluid
+            b=aft
+            .card.mt-3
+                .card-header
+                    h5 LIST
+                        a.btn.btn-primary.btn-sm.float-right(href='/add') Add 
+                .card-body
+                    .row.mt-3
+                        .col-sm-12
+                            table.table.table-bordered
+                                thead
+                                    tr
+                                        th.text-center
+                                            b Country Name
+                                        th.text-center
+                                            b State Name 
+                                        th.text-center
+                                            b District Name 
+                                        th.text-center 
+                                            b Action
+                                tbody
+                                    if(stateObj)
+                                        for aft in stateObj
+                                            tr
+                                                td.text-center= aft.country_name
+                                                td.text-center= aft.state_name
+                                                td.text-center= aft.district_name
+                                                td.text-center
+                                                    if(aft.status == 1) 
+                                                        button.btn.btn-success.btn-sm.mr-1.mb-2(type='submit',onclick="deactivespecial('"+aft._id+"')") Active
+                                                    else
+                                                        button.btn.btn-success.btn-sm.mr-1.mb-2(type='submit', onclick="activespecial('"+aft._id+"')") Deactive
+                                                    //- a.btn.btn-primary.btn-sm.mr-1.mb-2(href='/View/'+aft._id) View
+                                                    //- a.btn.btn-primary.btn-sm.mr-1.mb-2(href='/Edit/'+aft._id) Edit
+                                                    a.btn.btn-danger.btn-sm.mr-1.mb-2(href='/delete/' +aft._id) Delete
+                        //- .col-sm-4
+                        //-     table.table.table-bordered
+                        //-         thead
+                        //-             tr
+                        //-                 th.text-center
+                        //-                     b State Name
+                        //-                 th.text-center
+                        //-                     b Action
+                        //-         tbody
+                        //-             if(stateObj)
+                        //-                 for aft in stateObj
+                        //-                     tr
+                        //-                         td.text-center= aft.state_name
+                        //-                         td.text-left
+                        //-                             if(aft.status == 1)
+                        //-                                 .input-group-append 
+                        //-                                     button.btn.btn-success.btn-sm(type='submit',onclick="deactivespecial('"+aft._id+"')") Active
+                        //-                             else
+                        //-                                 .input-group-append 
+                        //-                                     button.btn.btn-success.btn-sm(type='submit', onclick="activespecial('"+aft._id+"')") Deactive
+                        //- .col-sm-4
+                        //-     table.table.table-bordered
+                        //-         thead
+                        //-             tr
+                        //-                 th.text-center
+                        //-                     b District Name 
+                        //-                 th.text-center
+                        //-                     b Action
+                        //-         tbody
+                        //-             if(stateObj)
+                        //-                 for aft in stateObj
+                        //-                     tr
+                        //-                         td.text-center= aft.district_name
+                        //-                         td.text-left
+                        //-                             if(aft.status == 1)
+                        //-                                 .input-group-append 
+                        //-                                     button.btn.btn-success.btn-sm(type='submit',onclick="deactivespecial('"+aft._id+"')") Active
+                        //-                             else
+                        //-                                 .input-group-append 
+                        //-                                     button.btn.btn-success.btn-sm(type='submit', onclick="activespecial('"+aft._id+"')") Deactive
+    script.
+        function deactivespecial(data){
+            var spl_id=data;
+            $.post('/admin/deactive_eqipment',{spl_id:spl_id}, function(data) {
+            var result_data=data;
+            alert('Deactivate successfully');
+            window.location.reload();
+            });
+        }
+        function activespecial(data){
+            var spl_id=data;
+            $.post('/admin/active_eqipment',{spl_id:spl_id}, function(data) {
+            var result_data=data;
+            alert('Activate successfully');
+            window.location.reload();
+            });
+        }
+        function deletespecial(data){
+            var spl_id=data;
+            $.post('/admin/equipment_del',{spl_id:spl_id}, function(data) {
+            var result_data=data;
+            alert('delete successfully');
+            window.location.reload();
+            });
+        }

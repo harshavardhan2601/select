@@ -1,0 +1,100 @@
+html
+	include header.pug 
+	include navbar.pug
+	script(type='text/javascript').
+			function makeSubmenu(country_d) {
+				var im = country_d.selectedIndex;
+				//- console.log(im);
+				var country_ty = country_d.options[im].getAttribute('value');
+				//- console.log(country_ty);
+				$.post('/getcountryDetail',{country_ty:country_ty},function(data){
+						console.log(data.stateArray);
+						var state_value = data.stateArray;
+						if(state_value.length > 0){
+							let stateobj = data.stateArray;
+							//- console.log(stateobj);
+							var stateTy = '<option value="">Select</option>';
+							var actObj={};
+							for (i = 0; i < stateobj.length; i++) {
+								console.log(stateobj[i]);
+									var sel = "";
+									actObj.statename = stateobj[i];
+									//- console.log(actObj.statename);
+									stateTy += '<option value=' + JSON.stringify(actObj.statename) + '>' + stateobj[i] + '</option>';
+							}
+							//- console.log(stateTy);
+							$('#state').html(stateTy);
+						}else{
+							alert(stateTy+' has no state');
+						}
+					});
+			}
+		function makemenu(state_d) {
+			var dm = state_d.selectedIndex;
+			console.log(dm);
+			var state_ty = state_d.options[dm].getAttribute('value');
+			console.log(state_ty);
+			$.post('/getstateDetail',{state_ty:state_ty},function(data){
+					console.log(data.districtArray);
+					var district_value = data.districtArray;
+					if(district_value.length > 0){
+						let districtobj = data.districtArray;
+						//- console.log(stateobj.length);
+						var districtTy = '<option value="">Select</option>';
+						var disObj={};
+						for (i = 0; i < districtobj.length; i++) {
+							console.log(districtobj[i].status);
+							for(k = 0; k < districtobj[i].status; k++){
+								var sel = "";
+								disObj.id = districtobj[i]._id;
+								console.log(disObj.id);
+								disObj.districtname = districtobj[i].district_name;
+								console.log(disObj.districtname);
+								districtTy += '<option value=' + JSON.stringify(disObj.districtname) + '>' + districtobj[i].district_name + '</option>';
+							}
+						}
+						console.log(districtTy);
+						$('#district').html(districtTy);
+					}else{
+						alert(districtTy+' has no state');
+					}
+			});
+		}
+	body
+		.container-fluid
+			.row
+				.col-md-12.mt-3
+					.card
+						.card-header.card-header-primary
+							h5.card-title Drop 
+						.card-body
+							form(method='POST', action='#')
+								.row.mt-3
+									.col-md-4.col-sm-4
+										.input-group.input-group-sm
+											.input-group-append
+												.input-group-text Country 
+											select.form-control#country(name='country_d' ,onchange='makeSubmenu(this)')
+													option(value='') Select
+														for state in stateObj
+															option(value=state) #{state}
+									.col-md-4.col-sm-4
+										.input-group.input-group-sm 
+											.input-group-append
+												.input-group-text State 
+											select.form-control#state(name='state_d' ,onchange='makemenu(this)')
+													option(value='') Select
+														//- for state in stateObj
+														//- 	option(value=state.state_name) #{state.state_name}
+									.col-md-4.col-sm-4
+										.input-group.input-group-sm 
+											.input-group-append
+												.input-group-text District
+											select.form-control#district(name='district_d')
+													option(value='') Select
+														//- for state in stateObj
+														//- 	option(value=state.district_name) #{state.district_name}
+								.row
+									.col-md-12.text-center
+										input.btn.btn-primary(type='submit', value="Submit")
+	

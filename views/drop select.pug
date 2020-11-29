@@ -1,0 +1,30 @@
+html
+	head
+		title drop
+		include header.pug
+		include navbar.pug
+		script(src="/assests/js/select drop.js")
+	body
+		.container-fluid.mt-5
+			.row
+				.col-md-12
+					.card
+						.card-header
+							h5.card-title Drop Select
+						.card-body
+							form(action='')
+								.row.mt-3
+									.col-md-3
+										select#countySel.form-control(size='1')
+											option(value='', selected='selected') -- Select Country --
+									.col-md-3
+										select#stateSel.form-control(size='1')
+											option(value='', selected='selected') -- Select State--
+									.col-md-3
+										select#citySel.form-control(size='1')
+											option(value='', selected='selected') -- Select district--
+									.col-md-3
+										select#zipSel.form-control(size='1')
+											option(value='', selected='selected') -- Select Mandal--
+								.row.mt-3
+									button.btn.btn-danger.offset-md-6  Submit
